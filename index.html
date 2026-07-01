@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tagore Rao Kosireddy</title>
+<meta name="description" content="Tagore Rao Kosireddy. PhD student at Michigan Tech working on mechanistic interpretability, LLM memorization, and agentic AI safety.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav" aria-label="Site">
+  <a class="nav-name" href="#top">TK</a>
+  <div class="nav-links">
+    <a href="#news">News</a>
+    <a href="#publications">Publications</a>
+    <a href="#research">Research</a>
+    <a href="#experience">Experience</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-text">
+    <p class="eyebrow" id="hero-eyebrow"></p>
+    <h1 id="hero-name"></h1>
+    <p class="tagline" id="hero-tagline"></p>
+    <p class="hero-sub" id="hero-sub"></p>
+    <div class="hero-actions" id="hero-actions"></div>
+  </div>
+  <figure class="trace" aria-hidden="true">
+    <svg id="trace-svg" viewBox="0 0 260 300" xmlns="http://www.w3.org/2000/svg"></svg>
+    <figcaption>causal tracing, layer by layer</figcaption>
+  </figure>
+</header>
+
+<main>
+  <section id="about" class="section">
+    <h2><span class="mono-label">01</span>About</h2>
+    <div class="prose" id="about-body"></div>
+    <ul class="chips" id="interest-chips"></ul>
+  </section>
+
+  <section id="news" class="section">
+    <h2><span class="mono-label">02</span>News</h2>
+    <ul class="news-list" id="news-list"></ul>
+  </section>
+
+  <section id="publications" class="section">
+    <h2><span class="mono-label">03</span>Publications</h2>
+    <div id="pub-list"></div>
+  </section>
+
+  <section id="research" class="section">
+    <h2><span class="mono-label">04</span>Talks</h2>
+    <ul class="talk-list" id="talk-list"></ul>
+  </section>
+
+  <section id="experience" class="section">
+    <h2><span class="mono-label">05</span>Experience</h2>
+    <div id="exp-list"></div>
+  </section>
+
+  <section id="awards" class="section">
+    <h2><span class="mono-label">06</span>Awards</h2>
+    <ul class="award-list" id="award-list"></ul>
+  </section>
+
+  <section id="contact" class="section">
+    <h2><span class="mono-label">07</span>Contact</h2>
+    <p class="prose" id="contact-body"></p>
+    <div class="hero-actions" id="contact-actions"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span id="footer-left"></span>
+  <span id="footer-right"></span>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* Hero */
+  $("hero-eyebrow").textContent = SITE.role + " · " + SITE.institution;
+  $("hero-name").textContent = SITE.name;
+  $("hero-tagline").textContent = SITE.tagline;
+  $("hero-sub").textContent = SITE.location;
+  $("hero-actions").innerHTML = [
+    ["Email", "mailto:" + SITE.email],
+    ["Google Scholar", SITE.links.scholar],
+    ["GitHub", SITE.links.github],
+    ["LinkedIn", SITE.links.linkedin],
+    ["CV (PDF)", SITE.links.cv]
+  ].map(([label, href]) =>
+    '<a class="btn" href="' + esc(href) + '"' + (href.startsWith("http") ? ' target="_blank" rel="noopener"' : '') + '>' + esc(label) + '</a>'
+  ).join("");
+
+  /* About */
+  $("about-body").innerHTML = SITE.about.map(p => "<p>" + esc(p) + "</p>").join("");
+  $("interest-chips").innerHTML = SITE.interests.map(i => "<li>" + esc(i) + "</li>").join("");
+
+  /* News */
+  $("news-list").innerHTML = SITE.news.map(n =>
+    '<li><span class="news-date">' + esc(n.date) + "</span><span>" + esc(n.text) + "</span></li>"
+  ).join("");
+
+  /* Publications */
+  const typeLabel = { oral: "Oral", poster: "Poster", paper: "Paper" };
+  $("pub-list").innerHTML = SITE.publications.map(p => {
+    const links = Object.entries(p.links || {}).map(([k, v]) =>
+      '<a href="' + esc(v) + '" target="_blank" rel="noopener">[' + esc(k) + "]</a>"
+    ).join(" ");
+    const me = SITE.name.split(" ")[0];
+    const authors = esc(p.authors).replace(new RegExp("(Tagore[^,]*)", "g"), "<strong>$1</strong>");
+    return '<article class="pub">' +
+      '<div class="pub-meta"><span class="venue-tag' + (p.type === "oral" ? " venue-oral" : "") + '">' + esc(p.venue) + "</span>" +
+      '<span class="pub-type">' + esc(typeLabel[p.type] || "") + "</span></div>" +
+      '<h3 class="pub-title">' + esc(p.title) + "</h3>" +
+      '<p class="pub-authors">' + authors + "</p>" +
+      (p.summary ? '<p class="pub-summary">' + esc(p.summary) + "</p>" : "") +
+      '<p class="pub-links">' + (p.note ? '<span class="pub-note">' + esc(p.note) + "</span> " : "") + links + "</p>" +
+      "</article>";
+  }).join("");
+
+  /* Talks */
+  $("talk-list").innerHTML = SITE.talks.map(t =>
+    '<li><span class="talk-kind">' + esc(t.kind) + "</span>" +
+    "<div><strong>" + esc(t.title) + "</strong><br><span class='muted'>" + esc(t.venue) + (t.date ? " · " + esc(t.date) : "") + "</span></div></li>"
+  ).join("");
+
+  /* Experience */
+  $("exp-list").innerHTML = SITE.experience.map(e =>
+    '<article class="exp">' +
+    '<div class="exp-head"><div><h3>' + esc(e.role) + "</h3><p class='muted'>" + esc(e.org) + "</p></div>" +
+    '<span class="exp-period">' + esc(e.period) + "</span></div>" +
+    "<ul>" + e.points.map(pt => "<li>" + esc(pt) + "</li>").join("") + "</ul>" +
+    "</article>"
+  ).join("");
+
+  /* Awards */
+  $("award-list").innerHTML = SITE.awards.map(a =>
+    "<li>" + esc(a.title) + (a.year ? ' <span class="muted">(' + esc(a.year) + ")</span>" : "") + "</li>"
+  ).join("");
+
+  /* Contact */
+  $("contact-body").textContent =
+    "The fastest way to reach me is email. I am happy to talk about interpretability, memorization, loss masking, or anything at the intersection of privacy and language models.";
+  $("contact-actions").innerHTML =
+    '<a class="btn btn-solid" href="mailto:' + esc(SITE.email) + '">' + esc(SITE.email) + "</a>" +
+    '<a class="btn" href="' + esc(SITE.links.resume) + '">Resume (PDF)</a>';
+
+  /* Footer */
+  $("footer-left").textContent = "© " + new Date().getFullYear() + " " + SITE.shortName;
+  $("footer-right").textContent = SITE.footerNote;
+
+  /* Trace SVG: transformer layers with a probe line lighting up */
+  const svg = $("trace-svg");
+  const NS = "http://www.w3.org/2000/svg";
+  const layers = 8, tokens = 5;
+  const x0 = 30, y0 = 24, dx = 50, dy = 34;
+  for (let l = 0; l < layers; l++) {
+    for (let t = 0; t < tokens; t++) {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", x0 + t * dx);
+      c.setAttribute("cy", y0 + l * dy);
+      c.setAttribute("r", 5);
+      c.setAttribute("class", "node" + (t === 2 ? " node-trace" : ""));
+      c.style.setProperty("--d", (l * 0.35) + "s");
+      svg.appendChild(c);
+    }
+  }
+  const path = document.createElementNS(NS, "path");
+  path.setAttribute("d", "M " + (x0 + 2 * dx) + " " + y0 + " V " + (y0 + (layers - 1) * dy));
+  path.setAttribute("class", "trace-line");
+  svg.insertBefore(path, svg.firstChild);
+})();
+</script>
+</body>
+</html>
